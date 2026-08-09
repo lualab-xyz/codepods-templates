@@ -4,11 +4,22 @@ set -euo pipefail
 add_mcp_server() {
   local name="$1"
   local url="$2"
-  local transport="${3:-http}"
+  local transport="${3:-streamable-http}"
   local auth_header="${4:-}"
 
-  echo "WARNING: OpenClaw does not support MCP servers natively; skipping ${name} (${transport}) -> ${url}" >&2
-  return 0
+  echo "Adding MCP server ${name} (${transport}) -> ${url}"
+
+  local args=("openclaw" "mcp" "add" "$name" "--url" "$url" "--transport" "$transport")
+  if [ -n "$auth_header" ]; then
+    args+=("--header" "$auth_header")
+  fi
+
+  if ! "${args[@]}"; then
+    echo "ERROR: failed to add MCP server ${name}" >&2
+    return 1
+  fi
+
+  echo "OK: MCP server ${name} added"
 }
 
 if [ "$#" -lt 2 ]; then
@@ -17,5 +28,7 @@ if [ "$#" -lt 2 ]; then
   exit 1
 fi
 
-add_mcp_server "$@"
-echo "OK: no MCP server added (OpenClaw has no native MCP support)"
+if ! add_mcp_server "$@"; then
+  echo "ERROR: failed to add MCP server" >&2
+  exit 1
+fi
