@@ -22,7 +22,7 @@ WEB_PORT="${WEB_PORT:-${CODEPODS_WEB_PORT:-5494}}"
 # Mark this invocation as the current owner
 echo "$$" > "$PID_FILE"
 
-TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec kimi")
+TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec kimi --continue")
 
 pids=()
 stop=false
