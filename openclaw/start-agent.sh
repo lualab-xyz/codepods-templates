@@ -22,7 +22,7 @@ WEB_PORT="${WEB_PORT:-${CODEPODS_WEB_PORT:-18789}}"
 # Mark this invocation as the current owner
 echo "$$" > "$PID_FILE"
 
-TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec bash")
+TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec openclaw")
 
 pids=()
 stop=false
