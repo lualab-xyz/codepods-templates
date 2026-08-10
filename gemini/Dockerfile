@@ -4,9 +4,14 @@ ENV TERM=tmux-256color
 ENV LANG=en_US.UTF-8
 
 RUN apt-get update && apt-get install -y \
-    curl nodejs npm nano git sudo ca-certificates gnupg tmux \
-    && npm install -g @google/gemini-cli \
+    curl nano git sudo ca-certificates gnupg tmux \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 24 (Gemini CLI requires Node 20+)
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install -g @google/gemini-cli
 
 # ttyd — terminal web (binario estático)
 RUN curl -fsSL "https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x86_64" \
