@@ -21,8 +21,7 @@ FONT_OPTION="fontSize=${TERM_FONT_SIZE:-14}"
 # Mark this invocation as the current owner
 echo "$$" > "$PID_FILE"
 
-COPILOT_MODEL="${COPILOT_MODEL:-default}"
-TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec copilot --model \"$COPILOT_MODEL\" --resume")
+TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec copilot --resume")
 
 pids=()
 stop=false

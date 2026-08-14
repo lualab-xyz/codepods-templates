@@ -1,21 +1,21 @@
 # Codepods Templates
 
-Colección de **plantillas de contenedores** para ejecutar distintos **asistentes de IA en línea de comandos (CLI)** accesibles desde el navegador web. Estas plantillas están diseñadas para ser consumidas por [**Codepods**](https://github.com/lualab-xyz/codepods), el orquestador que despliega cada plantilla como un *pod* contenerizado con un terminal web interactivo.
+A collection of **container templates** for running different **AI command-line (CLI) assistants** accessible from the web browser. These templates are designed to be consumed by [**Codepods**](https://github.com/lualab-xyz/codepods), the orchestrator that deploys each template as a containerized *pod* with an interactive web terminal.
 
-## ¿Cómo funciona?
+## How it works
 
-Cada plantilla empaqueta un CLI de IA dentro de una imagen Docker basada en `ubuntu:24.04`. El propio `entrypoint` solo mantiene el contenedor vivo; los servicios se arrancan de forma independiente mediante el comando `start_agent` del orquestador:
+Each template packages an AI CLI inside a Docker image based on `ubuntu:24.04`. The `entrypoint` itself only keeps the container alive; services are started independently through the orchestrator's `start_agent` command:
 
-1. `start_agent` lanza **[ttyd](https://github.com/tsl0922/ttyd)** en el puerto configurado (`7681` por defecto).
-2. ttyd adjunta una sesión persistente de **[tmux](https://github.com/tmux/tmux)** que ejecuta el CLI correspondiente en `/workspace`.
-3. Para los agentes con UI web, `start_agent` arranca también ese segundo servicio en su puerto correspondiente.
-4. `stop_agent` detiene limpiamente la instancia anterior para poder reiniciar (`stop_agent` → `start_agent`).
-5. `set_provider` configura el proveedor BYOK en la configuración nativa de cada CLI.
+1. `start_agent` launches **[ttyd](https://github.com/tsl0922/ttyd)** on the configured port (`7681` by default).
+2. ttyd attaches a persistent **[tmux](https://github.com/tmux/tmux)** session that runs the corresponding CLI in `/workspace`.
+3. For agents with a web UI, `start_agent` also starts that second service on its own port.
+4. `stop_agent` cleanly stops the previous instance so it can be restarted (`stop_agent` → `start_agent`).
+5. `set_provider` configures the BYOK provider in each CLI's native configuration.
 
-## Plantillas disponibles
+## Available templates
 
-| Plantilla | CLI | Servicios | Origen |
-|-----------|-----|-----------|--------|
+| Template | CLI | Services | Source |
+|----------|-----|----------|--------|
 | [`copilot/`](./copilot) | GitHub Copilot CLI | Copilot CLI | [`@github/copilot`](https://www.npmjs.com/package/@github/copilot) |
 | [`codex/`](./codex) | OpenAI Codex CLI | Codex CLI | [`@openai/codex`](https://www.npmjs.com/package/@openai/codex) |
 | [`opencode/`](./opencode) | OpenCode CLI | OpenCode CLI + OpenCode Web | [`opencode-ai`](https://www.npmjs.com/package/opencode-ai) |
@@ -23,25 +23,25 @@ Cada plantilla empaqueta un CLI de IA dentro de una imagen Docker basada en `ubu
 | [`kimi/`](./kimi) | Moonshot Kimi Code CLI | Kimi Code CLI + Kimi Web UI | [kimi-cli](https://github.com/MoonshotAI/kimi-cli) |
 | [`openclaw/`](./openclaw) | OpenClaw gateway | OpenClaw + Control UI | [`openclaw`](https://www.npmjs.com/package/openclaw) |
 
-## Estructura de una plantilla
+## Template structure
 
 ```
-<plantilla>/
-├── manifest.yml        # Metadatos: nombre, descripción, iconos, servicios y comandos
-├── Dockerfile          # Imagen base + instalación del CLI + ttyd
-├── entrypoint.sh       # Keepalive del contenedor (tail -f /dev/null)
-├── start-agent.sh      # Arranca ttyd/tmux (y la UI web si aplica)
-├── stop-agent.sh       # Detiene la instancia anterior de start_agent
-├── set-provider.sh     # Configura el proveedor BYOK del CLI
-├── defaults.env        # Variables por defecto (puertos, terminal, modelo…)
-├── files/              # Configuraciones nativas del CLI
-└── *-light.svg|png     # Icono en modo claro
-└── *-dark.svg|png      # Icono en modo oscuro
+<template>/
+├── manifest.yml        # Metadata: name, description, icons, services and commands
+├── Dockerfile          # Base image + CLI installation + ttyd
+├── entrypoint.sh       # Container keepalive (tail -f /dev/null)
+├── start-agent.sh      # Starts ttyd/tmux (and the web UI if applicable)
+├── stop-agent.sh       # Stops the previous start_agent instance
+├── set-provider.sh     # Configures the CLI's BYOK provider
+├── defaults.env        # Default variables (ports, terminal, model…)
+├── files/              # Native CLI configurations
+└── *-light.svg|png     # Light-mode icon
+└── *-dark.svg|png      # Dark-mode icon
 ```
 
 ### `manifest.yml`
 
-Describe la plantilla para Codepods:
+Describes the template for Codepods:
 
 ```yaml
 display_name: "Copilot"
@@ -50,57 +50,66 @@ workspace_path: "/workspace"
 icon: "copilot-light.svg"
 icon_dark: "copilot-dark.svg"
 services:
-  - "terminal|Copilot CLI|7681"   # <nombre>|<tipo>|<puerto>
+  - "terminal|Copilot CLI|7681"   # <name>|<type>|<port>
 commands:
   - set_provider: "/usr/local/bin/set-provider.sh $baseUrl $modelName $apiKey $providerName $providerType"
   - start_agent: "/usr/local/bin/start-agent.sh"
   - stop_agent: "/usr/local/bin/stop-agent.sh"
 ```
 
-### Puertos y variables
+### Ports and variables
 
-Los puertos se pueden sobreescribir mediante variables de entorno, con *fallback* a las variables de Codepods (`CODEPODS_*`):
+Ports can be overridden through environment variables, with *fallback* to the Codepods variables (`CODEPODS_*`):
 
-| Variable | Default | Origen Codepods | Descripción |
+| Variable | Default | Codepods source | Description |
 |----------|---------|-----------------|-------------|
-| `TERMINAL_PORT` | `7681` | `CODEPODS_TERMINAL_PORT` | Puerto del terminal web (ttyd) |
-| `WEB_PORT` | `4096` / `5494` | `CODEPODS_WEB_PORT` | Puerto de la UI web (si aplica) |
-| `TERM_FONT_SIZE` | `14` | — | Tamaño de fuente del terminal |
-| `TERM` | `tmux-256color` | — | Tipo de terminal |
+| `TERMINAL_PORT` | `7681` | `CODEPODS_TERMINAL_PORT` | Web terminal port (ttyd) |
+| `WEB_PORT` | `4096` / `5494` | `CODEPODS_WEB_PORT` | Web UI port (if applicable) |
+| `TERM_FONT_SIZE` | `14` | — | Terminal font size |
+| `TERM` | `tmux-256color` | — | Terminal type |
 | `LANG` | `en_US.UTF-8` | — | Locale |
 
-## Uso
+## Usage
 
-Estas plantillas no se ejecutan directamente: Codepods las descubre, construye la imagen correspondiente y despliega el pod. Consulta la documentación de [Codepods](https://github.com/lualab-xyz/codepods) para saber cómo registrar y lanzar una plantilla.
+These templates are not run directly: Codepods discovers them, builds the corresponding image and deploys the pod. See the [Codepods](https://github.com/lualab-xyz/codepods) documentation to learn how to register and launch a template.
 
-Para construir y probar una imagen manualmente:
+To build and test an image manually:
 
 ```bash
 cd copilot
 docker build -t codepods/copilot .
 docker run -d --name copilot-test -p 7681:7681 -e CODEPODS_TERMINAL_PORT=7681 codepods/copilot
 
-# Arrancar los servicios
+# Start the services
 docker exec copilot-test /usr/local/bin/start-agent.sh
-# o, si ya estaba arrancado, reiniciar:
+# or, if it was already running, restart:
 docker exec copilot-test /usr/local/bin/stop-agent.sh
 docker exec copilot-test /usr/local/bin/start-agent.sh
 
-# Abre http://localhost:7681 en el navegador
+# Open http://localhost:7681 in your browser
 ```
 
-> ⚠️ El primer arranque del CLI dentro del contenedor requerirá autenticación (p. ej. `/login`) con las credenciales del proveedor correspondiente. En su lugar, `set_provider` permite inyectar la configuración BYOK desde el orquestador.
+> ⚠️ The first time the CLI starts inside the container it will require authentication (e.g. `/login`) with the corresponding provider's credentials. Alternatively, `set_provider` lets you inject the BYOK configuration from the orchestrator.
 
-## Añadir una nueva plantilla
+## Terminal tips (ttyd)
 
-1. Crea una carpeta nueva (p. ej. `mi-cli/`) replicando la estructura anterior.
-2. Escribe un `Dockerfile` que instale el CLI y `ttyd`, y copie `entrypoint.sh`, `start-agent.sh`, `stop-agent.sh` y `set-provider.sh`.
-3. `entrypoint.sh` debe ser keepalive (`tail -f /dev/null`); el arranque real va en `start-agent.sh`.
-4. Escribe `start-agent.sh` para lanzar `ttyd` + `tmux` con el CLI en `/workspace`. Si el CLI tiene UI web, añade un servicio `web` como en `opencode/`, `kimi/` u `openclaw/`.
-5. Añade `stop-agent.sh` para poder reiniciar limpiamente la sesión.
-6. Define `manifest.yml`, `defaults.env` y los iconos.
-7. Registra la plantilla en Codepods.
+The web terminal is powered by [ttyd](https://github.com/tsl0922/ttyd) + [tmux](https://github.com/tmux/tmux). Some shortcuts differ from a native terminal:
 
-## Licencia
+- **New line / send message**: press **`Alt` + `Enter`** (or `Shift` + `Enter`) to insert a new line without sending the message to the CLI.
+- **Copy**: hold **`Shift`** while selecting text, then release — the selection is copied to the browser clipboard. (In TUI apps the app captures the mouse, so `Shift` is required to select.)
+- **Paste**: press **`Shift`** + `Insert`, or use the browser's paste shortcut (`Ctrl` + `V` / `Cmd` + `V`).
+- **`Ctrl` + `C`** is intercepted by the terminal as the interrupt signal (SIGINT), not copy.
 
-Este repositorio forma parte del ecosistema [Codepods](https://github.com/lualab-xyz/codepods). Consulta el proyecto principal para detalles de licencia.
+## Adding a new template
+
+1. Create a new folder (e.g. `my-cli/`) replicating the structure above.
+2. Write a `Dockerfile` that installs the CLI and `ttyd`, and copies `entrypoint.sh`, `start-agent.sh`, `stop-agent.sh` and `set-provider.sh`.
+3. `entrypoint.sh` must be a keepalive (`tail -f /dev/null`); the actual startup goes in `start-agent.sh`.
+4. Write `start-agent.sh` to launch `ttyd` + `tmux` with the CLI in `/workspace`. If the CLI has a web UI, add a `web` service as in `opencode/`, `kimi/` or `openclaw/`.
+5. Add `stop-agent.sh` so the session can be cleanly restarted.
+6. Define `manifest.yml`, `defaults.env` and the icons.
+7. Register the template in Codepods.
+
+## License
+
+This repository is part of the [Codepods](https://github.com/lualab-xyz/codepods) ecosystem. See the main project for license details.
