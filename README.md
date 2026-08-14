@@ -95,7 +95,7 @@ docker exec copilot-test /usr/local/bin/start-agent.sh
 
 The web terminal is powered by [ttyd](https://github.com/tsl0922/ttyd) + [tmux](https://github.com/tmux/tmux). Some shortcuts differ from a native terminal:
 
-- **New line / send message**: press **`Alt` + `Enter`** (or `Shift` + `Enter`) to insert a new line without sending the message to the CLI.
+- **New line / send message**: press **`Alt` + `Enter`** to insert a new line without sending the message to the CLI.
 - **Copy**: hold **`Shift`** while selecting text, then release — the selection is copied to the browser clipboard. (In TUI apps the app captures the mouse, so `Shift` is required to select.)
 - **Paste**: press **`Shift`** + `Insert`, or use the browser's paste shortcut (`Ctrl` + `V` / `Cmd` + `V`).
 - **`Ctrl` + `C`** is intercepted by the terminal as the interrupt signal (SIGINT), not copy.
