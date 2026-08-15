@@ -1,6 +1,6 @@
-# Codepods Templates
+# CodePods Templates
 
-A collection of **container templates** for running different **AI command-line (CLI) assistants** accessible from the web browser. These templates are designed to be consumed by [**Codepods**](https://github.com/lualab-xyz/codepods), the orchestrator that deploys each template as a containerized *pod* with an interactive web terminal.
+A collection of **container templates** for running different **AI command-line (CLI) assistants** accessible from the web browser. These templates are designed to be consumed by [**CodePods**](https://github.com/lualab-xyz/codepods), the orchestrator that deploys each template as a containerized *pod* with an interactive web terminal.
 
 ## How it works
 
@@ -41,7 +41,7 @@ Each template packages an AI CLI inside a Docker image based on `ubuntu:24.04`. 
 
 ### `manifest.yml`
 
-Describes the template for Codepods:
+Describes the template for CodePods:
 
 ```yaml
 display_name: "Copilot"
@@ -59,9 +59,9 @@ commands:
 
 ### Ports and variables
 
-Ports can be overridden through environment variables, with *fallback* to the Codepods variables (`CODEPODS_*`):
+Ports can be overridden through environment variables, with *fallback* to the CodePods variables (`CODEPODS_*`):
 
-| Variable | Default | Codepods source | Description |
+| Variable | Default | CodePods source | Description |
 |----------|---------|-----------------|-------------|
 | `TERMINAL_PORT` | `7681` | `CODEPODS_TERMINAL_PORT` | Web terminal port (ttyd) |
 | `WEB_PORT` | `4096` / `5494` | `CODEPODS_WEB_PORT` | Web UI port (if applicable) |
@@ -71,7 +71,7 @@ Ports can be overridden through environment variables, with *fallback* to the Co
 
 ## Usage
 
-These templates are not run directly: Codepods discovers them, builds the corresponding image and deploys the pod. See the [Codepods](https://github.com/lualab-xyz/codepods) documentation to learn how to register and launch a template.
+These templates are not run directly: CodePods discovers them, builds the corresponding image and deploys the pod. See the [CodePods](https://github.com/lualab-xyz/codepods) documentation to learn how to register and launch a template.
 
 To build and test an image manually:
 
@@ -108,8 +108,8 @@ The web terminal is powered by [ttyd](https://github.com/tsl0922/ttyd) + [tmux](
 4. Write `start-agent.sh` to launch `ttyd` + `tmux` with the CLI in `/workspace`. If the CLI has a web UI, add a `web` service as in `opencode/`, `kimi/` or `openclaw/`.
 5. Add `stop-agent.sh` so the session can be cleanly restarted.
 6. Define `manifest.yml`, `defaults.env` and the icons.
-7. Register the template in Codepods.
+7. Register the template in CodePods.
 
 ## License
 
-This repository is part of the [Codepods](https://github.com/lualab-xyz/codepods) ecosystem. See the main project for license details.
+This repository is part of the [CodePods](https://github.com/lualab-xyz/codepods) ecosystem. See the main project for license details.
