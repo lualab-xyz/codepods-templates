@@ -15,6 +15,7 @@ RUN curl -fsSL "https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x8
     -o /usr/local/bin/ttyd && chmod +x /usr/local/bin/ttyd
 
 COPY files/root/.tmux.conf /root/.tmux.conf
+COPY files/ttyd/index.html /opt/ttyd/index.html
 
 COPY set-git-proxy.sh /usr/local/bin/set-git-proxy.sh
 RUN chmod +x /usr/local/bin/set-git-proxy.sh

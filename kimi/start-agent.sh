@@ -41,6 +41,7 @@ start_ttyd() {
     --writable \
     --client-option disableLeaveAlert=true \
     --client-option "$FONT_OPTION" \
+    --index /opt/ttyd/index.html \
     "${TMUX_CMD[@]}" &
   pids+=("$!")
 }
