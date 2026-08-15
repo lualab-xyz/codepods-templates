@@ -12,17 +12,6 @@ Each template packages an AI CLI inside a Docker image based on `ubuntu:24.04`. 
 4. `stop_agent` cleanly stops the previous instance so it can be restarted (`stop_agent` → `start_agent`).
 5. `set_provider` configures the BYOK provider in each CLI's native configuration.
 
-## Available templates
-
-| Template | CLI | Services | Source |
-|----------|-----|----------|--------|
-| [`copilot/`](./copilot) | GitHub Copilot CLI | Copilot CLI | [`@github/copilot`](https://www.npmjs.com/package/@github/copilot) |
-| [`codex/`](./codex) | OpenAI Codex CLI | Codex CLI | [`@openai/codex`](https://www.npmjs.com/package/@openai/codex) |
-| [`opencode/`](./opencode) | OpenCode CLI | OpenCode CLI + OpenCode Web | [`opencode-ai`](https://www.npmjs.com/package/opencode-ai) |
-| [`claude/`](./claude) | Anthropic Claude Code CLI | Claude Code | [claude.ai/install.sh](https://code.claude.com/docs/en/quickstart) |
-| [`kimi/`](./kimi) | Moonshot Kimi Code CLI | Kimi Code CLI + Kimi Web UI | [kimi-cli](https://github.com/MoonshotAI/kimi-cli) |
-| [`openclaw/`](./openclaw) | OpenClaw gateway | OpenClaw + Control UI | [`openclaw`](https://www.npmjs.com/package/openclaw) |
-
 ## Template structure
 
 ```
