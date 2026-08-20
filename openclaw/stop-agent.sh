@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PID_FILE="/var/run/start-agent.pid"
+PID_FILE="/tmp/start-agent.pid"
 STOPPED=0
 FAILED=0
 
