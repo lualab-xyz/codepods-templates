@@ -9,7 +9,7 @@ if [ -f "$DEFAULTS_FILE" ]; then
   set +a
 fi
 
-PID_FILE="/var/run/start-agent.pid"
+PID_FILE="/tmp/start-agent.pid"
 TERMINAL_PORT="${TERMINAL_PORT:-${CODEPODS_TERMINAL_PORT:-7681}}"
 if [ -z "$TERMINAL_PORT" ]; then
   echo "ERROR: Terminal port not configured. Please set CODEPODS_TERMINAL_PORT." >&2

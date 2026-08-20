@@ -12,6 +12,12 @@ Each template packages an AI CLI inside a Docker image based on `ubuntu:24.04`. 
 4. `stop_agent` cleanly stops the previous instance so it can be restarted (`stop_agent` → `start_agent`).
 5. `set_provider` configures the BYOK provider in each CLI's native configuration.
 
+## Security
+
+Each template runs the agent as a **non-root** user (`agent`) for better isolation. The container's default user is `agent`; the CLI, ttyd and tmux all run as this user inside `/workspace` (which is owned by `agent`). The agent's home directory is `/home/agent`, where each CLI keeps its native configuration.
+
+System-level provisioning commands (e.g. installing the git proxy into `/usr/local/bin`) still require root and are run by the orchestrator as needed. When adding a new template, keep the `USER agent` directive as the last line of the `Dockerfile` so the runtime runs unprivileged.
+
 ## Template structure
 
 ```
@@ -92,7 +98,7 @@ The web terminal is powered by [ttyd](https://github.com/tsl0922/ttyd) + [tmux](
 ## Adding a new template
 
 1. Create a new folder (e.g. `my-cli/`) replicating the structure above.
-2. Write a `Dockerfile` that installs the CLI and `ttyd`, and copies `entrypoint.sh`, `start-agent.sh`, `stop-agent.sh` and `set-provider.sh`.
+2. Write a `Dockerfile` that installs the CLI and `ttyd`, and copies `entrypoint.sh`, `start-agent.sh`, `stop-agent.sh` and `set-provider.sh`. End the `Dockerfile` with `USER agent` so the agent runs as a non-root user (see [Security](#security)).
 3. `entrypoint.sh` must be a keepalive (`tail -f /dev/null`); the actual startup goes in `start-agent.sh`.
 4. Write `start-agent.sh` to launch `ttyd` + `tmux` with the CLI in `/workspace`. If the CLI has a web UI, add a `web` service as in `opencode/`, `kimi/` or `openclaw/`.
 5. Add `stop-agent.sh` so the session can be cleanly restarted.
