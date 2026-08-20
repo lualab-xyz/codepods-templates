@@ -1,6 +1,7 @@
 display_name: "Gemini"
 description: "Google Gemini CLI configuration"
 workspace_path: "/workspace"
+home_path: "/home/agent"
 icon: "gemini-light.svg"
 icon_dark: "gemini-dark.svg"
 services:
