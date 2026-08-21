@@ -2,6 +2,7 @@ display_name: "OpenClaw"
 description: "OpenClaw personal AI assistant gateway"
 workspace_path: "/workspace"
 home_path: "/home/agent"
+user: "agent"
 icon: "openclaw-light.svg"
 icon_dark: "openclaw-dark.svg"
 services:
