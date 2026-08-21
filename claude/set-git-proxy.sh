@@ -3,10 +3,13 @@ set -euo pipefail
 
 set_git_proxy() {
   local download_url="$1"
-  local bin_path="/usr/local/bin/git"
-  local backup_path="/usr/local/bin/git.original"
+  local bin_dir="${HOME}/.local/bin"
+  local bin_path="${bin_dir}/git"
+  local backup_path="${bin_dir}/git.original"
 
   echo "Installing git proxy from ${download_url}..."
+
+  mkdir -p "$bin_dir"
 
   # If a real git binary exists, move it aside (do not uninstall packages to avoid breaking deps)
   if [ -f "$bin_path" ] && [ ! -L "$bin_path" ]; then

@@ -22,7 +22,7 @@ RUN chmod +x /usr/local/bin/set-git-proxy.sh
 
 # Non-root user that runs the agent
 RUN useradd -m -s /bin/bash agent \
-    && mkdir -p /workspace \
+    && mkdir -p /workspace /home/agent/.local/bin /home/agent/.config \
     && chown -R agent:agent /workspace \
     && cp /root/.tmux.conf /home/agent/.tmux.conf \
     && chown agent:agent /home/agent/.tmux.conf
@@ -39,7 +39,6 @@ RUN npm install -g @openai/codex
 RUN mkdir -p /home/agent/.codex
 COPY files/root/.codex/config.toml /home/agent/.codex/config.toml
 
-COPY defaults.env /opt/defaults.env
 COPY entrypoint.sh /usr/local/bin/codex-entrypoint
 COPY set-provider.sh /usr/local/bin/set-provider.sh
 COPY add-mcp-server.sh /usr/local/bin/add-mcp-server.sh
@@ -47,7 +46,6 @@ COPY start-agent.sh /usr/local/bin/start-agent.sh
 COPY stop-agent.sh /usr/local/bin/stop-agent.sh
 RUN chmod +x /usr/local/bin/codex-entrypoint /usr/local/bin/set-provider.sh /usr/local/bin/add-mcp-server.sh /usr/local/bin/start-agent.sh /usr/local/bin/stop-agent.sh \
     && chown -R agent:agent /home/agent \
-    && chown -R agent:agent /opt
 
 USER agent
 

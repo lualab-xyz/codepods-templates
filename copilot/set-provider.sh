@@ -8,7 +8,7 @@ set_provider() {
   PROVIDER_NAME="$4"
   PROVIDER_TYPE="${5:-openai}"
 
-  DEFAULTS_FILE="/opt/defaults.env"
+  DEFAULTS_FILE="${HOME}/.config/codepods.env"
   mkdir -p "$(dirname "$DEFAULTS_FILE")"
 
   update_or_set() {
@@ -26,7 +26,7 @@ set_provider() {
   update_or_set "COPILOT_PROVIDER_WIRE_API" "responses"
   update_or_set "COPILOT_MODEL" "$MODEL_NAME"
 
-  echo "OK: Copilot BYOK provider set to ${PROVIDER_NAME}/${MODEL_NAME} via ${BASE_URL}"
+  echo "OK: Copilot BYOK provider set to ${PROVIDER_NAME}/${MODEL_NAME} via ${BASE_URL} (stored in ${DEFAULTS_FILE})"
 }
 
 if ! set_provider "$@"; then

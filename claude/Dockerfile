@@ -22,7 +22,7 @@ RUN chmod +x /usr/local/bin/set-git-proxy.sh
 
 # Non-root user that runs the agent
 RUN useradd -m -s /bin/bash agent \
-    && mkdir -p /workspace \
+    && mkdir -p /workspace /home/agent/.local/bin /home/agent/.config \
     && chown -R agent:agent /workspace \
     && cp /root/.tmux.conf /home/agent/.tmux.conf \
     && chown agent:agent /home/agent/.tmux.conf
@@ -38,14 +38,12 @@ ENV PATH="/home/agent/.local/bin:${PATH}"
 
 RUN curl -fsSL https://claude.ai/install.sh | bash
 
-COPY defaults.env /opt/defaults.env
 COPY entrypoint.sh /usr/local/bin/claude-entrypoint
 COPY start-agent.sh /usr/local/bin/start-agent.sh
 COPY add-mcp-server.sh /usr/local/bin/add-mcp-server.sh
 COPY stop-agent.sh /usr/local/bin/stop-agent.sh
 RUN chmod +x /usr/local/bin/claude-entrypoint /usr/local/bin/start-agent.sh /usr/local/bin/add-mcp-server.sh /usr/local/bin/stop-agent.sh \
     && chown -R agent:agent /home/agent \
-    && chown -R agent:agent /opt
 
 USER agent
 

@@ -22,7 +22,7 @@ RUN chmod +x /usr/local/bin/set-git-proxy.sh
 
 # Non-root user that runs the agent
 RUN useradd -m -s /bin/bash agent \
-    && mkdir -p /workspace \
+    && mkdir -p /workspace /home/agent/.local/bin /home/agent/.config \
     && chown -R agent:agent /workspace \
     && cp /root/.tmux.conf /home/agent/.tmux.conf \
     && chown agent:agent /home/agent/.tmux.conf
@@ -42,7 +42,6 @@ RUN mkdir -p /home/agent/.opencode /home/agent/.local/share/opencode
 COPY files/root/.opencode/opencode.jsonc /home/agent/.opencode/opencode.jsonc
 COPY files/root/.opencode/tui.json /home/agent/.opencode/tui.json
 COPY files/root/.local/share/opencode/auth.json /home/agent/.local/share/opencode/auth.json
-COPY defaults.env /opt/defaults.env
 
 COPY entrypoint.sh /usr/local/bin/opencode-entrypoint
 COPY set-provider.sh /usr/local/bin/set-provider.sh
@@ -51,7 +50,6 @@ COPY start-agent.sh /usr/local/bin/start-agent.sh
 COPY stop-agent.sh /usr/local/bin/stop-agent.sh
 RUN chmod +x /usr/local/bin/opencode-entrypoint /usr/local/bin/set-provider.sh /usr/local/bin/add-mcp-server.sh /usr/local/bin/start-agent.sh /usr/local/bin/stop-agent.sh \
     && chown -R agent:agent /home/agent \
-    && chown -R agent:agent /opt
 
 USER agent
 

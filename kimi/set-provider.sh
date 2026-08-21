@@ -18,11 +18,11 @@ set_provider() {
     *) TYPE="openai_responses" ;;
   esac
 
-  mkdir -p /root/.kimi
+  mkdir -p "${HOME}/.kimi"
 
-  PYTHON_BIN="${KIMI_PYTHON:-/root/.local/share/uv/python/cpython-3.13.14-linux-x86_64-gnu/bin/python3}"
+  PYTHON_BIN="${KIMI_PYTHON:-${HOME}/.local/share/uv/python/cpython-3.13.14-linux-x86_64-gnu/bin/python3}"
   "$PYTHON_BIN" - "$BASE_URL" "$MODEL_NAME" "$API_KEY" "$PROVIDER_NAME" "$TYPE" <<'PY'
-import sys
+import os, sys
 
 def esc(s: str) -> str:
     return s.replace('\\', '\\\\').replace('"', '\\"')
@@ -43,7 +43,7 @@ model = "{esc(model_name)}"
 max_context_size = 200000
 '''
 
-with open('/root/.kimi/config.toml', 'w') as f:
+with open(f"{os.environ['HOME']}/.kimi/config.toml", 'w') as f:
     f.write(toml)
 PY
 
