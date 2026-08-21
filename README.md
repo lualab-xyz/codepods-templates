@@ -43,6 +43,7 @@ display_name: "Copilot"
 description: "GitHub Copilot CLI configuration"
 workspace_path: "/workspace"
 home_path: "/home/agent"          # home directory of the non-root user that runs the agent
+user: "agent"                     # non-root user that runs the agent
 icon: "copilot-light.svg"
 icon_dark: "copilot-dark.svg"
 services:

@@ -2,6 +2,7 @@ display_name: "Kimi Code"
 description: "Moonshot Kimi Code CLI configuration"
 workspace_path: "/workspace"
 home_path: "/home/agent"
+user: "agent"
 icon: "kimi-light.svg"
 icon_dark: "kimi-dark.svg"
 services:
