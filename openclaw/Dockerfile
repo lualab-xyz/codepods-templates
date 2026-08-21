@@ -49,7 +49,7 @@ COPY add-mcp-server.sh /usr/local/bin/add-mcp-server.sh
 COPY start-agent.sh /usr/local/bin/start-agent.sh
 COPY stop-agent.sh /usr/local/bin/stop-agent.sh
 RUN chmod +x /usr/local/bin/openclaw-entrypoint /usr/local/bin/set-provider.sh /usr/local/bin/add-mcp-server.sh /usr/local/bin/start-agent.sh /usr/local/bin/stop-agent.sh \
-    && chown -R agent:agent /home/agent \
+    && chown -R agent:agent /home/agent
 
 USER agent
 

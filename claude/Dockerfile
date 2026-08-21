@@ -43,7 +43,7 @@ COPY start-agent.sh /usr/local/bin/start-agent.sh
 COPY add-mcp-server.sh /usr/local/bin/add-mcp-server.sh
 COPY stop-agent.sh /usr/local/bin/stop-agent.sh
 RUN chmod +x /usr/local/bin/claude-entrypoint /usr/local/bin/start-agent.sh /usr/local/bin/add-mcp-server.sh /usr/local/bin/stop-agent.sh \
-    && chown -R agent:agent /home/agent \
+    && chown -R agent:agent /home/agent
 
 USER agent
 
