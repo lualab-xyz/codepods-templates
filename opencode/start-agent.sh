@@ -68,12 +68,19 @@ start_ttyd() {
   pids+=("$!")
 }
 
+BASE_PATH="${OPENCODE_BASE_PATH:-${CODEPODS_BASE_PATH:-}}"
+
 start_web() {
   if [ -z "$WEB_PORT" ]; then
     return
   fi
   echo "Starting OpenCode web on port $WEB_PORT"
-  opencode web --port "$WEB_PORT" --hostname 0.0.0.0 > /tmp/opencode-web.log 2>&1 &
+  local base_path_arg=()
+  if [ -n "$BASE_PATH" ]; then
+    echo "Using base path: $BASE_PATH"
+    base_path_arg=(--base-path "$BASE_PATH")
+  fi
+  opencode web --port "$WEB_PORT" --hostname 0.0.0.0 "${base_path_arg[@]}" >/tmp/opencode-web.log 2>&1 &
   pids+=("$!")
 }
 

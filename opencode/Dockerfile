@@ -30,9 +30,11 @@ ENV HOME=/home/agent
 WORKDIR /workspace
 
 # ============================================================
-# Agent-specific: OpenCode CLI
+# Agent-specific: OpenCode CLI (feat/base-path-support build)
 # ============================================================
-RUN npm install -g opencode-ai
+# Experimental binary with base-path support (custom developer build)
+COPY files/bin/opencode /usr/local/bin/opencode
+RUN chmod +x /usr/local/bin/opencode
 
 COPY seed-config.sh /usr/local/bin/seed-config.sh
 COPY entrypoint.sh /usr/local/bin/opencode-entrypoint
