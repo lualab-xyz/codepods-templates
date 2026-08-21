@@ -16,7 +16,7 @@ Each template packages an AI CLI inside a Docker image based on `ubuntu:24.04`. 
 
 Each template runs the agent as a **non-root** user (`agent`) for better isolation. The container's default user is `agent`; the CLI, ttyd and tmux all run as this user inside `/workspace` (which is owned by `agent`). The agent's home directory is `/home/agent`, where each CLI keeps its native configuration.
 
-System-level provisioning commands (e.g. installing the git proxy into `/usr/local/bin`) still require root and are run by the orchestrator as needed. When adding a new template, keep the `USER agent` directive as the last line of the `Dockerfile` so the runtime runs unprivileged.
+The image is **read-only** for the agent user except for `$HOME`, `/workspace` and `/tmp` — nothing writes to `/opt` or `/usr/local` at runtime. Runtime configuration (ports, BYOK keys, …) is injected by the orchestrator via environment variables (`docker exec --user agent -e VAR=...`), and BYOK settings persisted by `set_provider` are stored under `$HOME/.config/codepods.env`. The git proxy is installed per-user into `$HOME/.local/bin` (prepended to `PATH` in `start-agent.sh`). When adding a new template, keep the `USER agent` directive as the last line of the `Dockerfile` so the runtime runs unprivileged.
 
 ## Template structure
 
@@ -27,8 +27,7 @@ System-level provisioning commands (e.g. installing the git proxy into `/usr/loc
 ├── entrypoint.sh       # Container keepalive (tail -f /dev/null)
 ├── start-agent.sh      # Starts ttyd/tmux (and the web UI if applicable)
 ├── stop-agent.sh       # Stops the previous start_agent instance
-├── set-provider.sh     # Configures the CLI's BYOK provider
-├── defaults.env        # Default variables (ports, terminal, model…)
+├── set-provider.sh     # Configures the CLI's BYOK provider (stores config in $HOME)
 ├── files/              # Native CLI configurations
 └── *-light.svg|png     # Light-mode icon
 └── *-dark.svg|png      # Dark-mode icon
@@ -56,7 +55,7 @@ commands:
 
 ### Ports and variables
 
-Ports can be overridden through environment variables, with *fallback* to the CodePods variables (`CODEPODS_*`):
+Ports can be overridden through environment variables, with *fallback* to the CodePods variables (`CODEPODS_*`). `start-agent.sh` sources `${HOME}/.config/codepods.env` (if present) and pushes the resolved runtime variables into the tmux session environment, so the CLI inherits them without writing any file:
 
 | Variable | Default | CodePods source | Description |
 |----------|---------|-----------------|-------------|
@@ -77,11 +76,11 @@ cd copilot
 docker build -t codepods/copilot .
 docker run -d --name copilot-test -p 7681:7681 -e CODEPODS_TERMINAL_PORT=7681 codepods/copilot
 
-# Start the services
-docker exec copilot-test /usr/local/bin/start-agent.sh
+# Start the services (as the non-root agent user, with runtime env)
+docker exec --user agent -e HOME=/home/agent -e TERMINAL_PORT=7681 copilot-test /usr/local/bin/start-agent.sh
 # or, if it was already running, restart:
-docker exec copilot-test /usr/local/bin/stop-agent.sh
-docker exec copilot-test /usr/local/bin/start-agent.sh
+docker exec --user agent -e HOME=/home/agent -e TERMINAL_PORT=7681 copilot-test /usr/local/bin/stop-agent.sh
+docker exec --user agent -e HOME=/home/agent -e TERMINAL_PORT=7681 copilot-test /usr/local/bin/start-agent.sh
 
 # Open http://localhost:7681 in your browser
 ```
@@ -104,7 +103,7 @@ The web terminal is powered by [ttyd](https://github.com/tsl0922/ttyd) + [tmux](
 3. `entrypoint.sh` must be a keepalive (`tail -f /dev/null`); the actual startup goes in `start-agent.sh`.
 4. Write `start-agent.sh` to launch `ttyd` + `tmux` with the CLI in `/workspace`. If the CLI has a web UI, add a `web` service as in `opencode/`, `kimi/` or `openclaw/`.
 5. Add `stop-agent.sh` so the session can be cleanly restarted.
-6. Define `manifest.yml`, `defaults.env` and the icons.
+6. Define `manifest.yml` and the icons.
 7. Register the template in CodePods.
 
 ## License

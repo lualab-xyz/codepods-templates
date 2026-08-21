@@ -23,11 +23,11 @@ set_provider() {
   esac
 
   python3 - "$BASE_URL" "$MODEL_NAME" "$API_KEY" "$PROVIDER_NAME" "$API" <<'PY'
-import json, subprocess, sys
+import json, os, subprocess, sys
 
 base_url, model_name, api_key, provider_name, api = sys.argv[1:6]
 
-config_path = '/root/.openclaw/openclaw.json'
+config_path = os.path.join(os.environ['HOME'], '.openclaw/openclaw.json')
 with open(config_path, 'r') as f:
     cfg = json.load(f)
 

@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DEFAULTS_FILE="/opt/defaults.env"
-if [ -f "$DEFAULTS_FILE" ]; then
+# Runtime configuration is injected by the orchestrator through environment
+# variables (e.g. `docker exec --user agent -e TERMINAL_PORT=7681 ...`).
+# BYOK settings persisted by set_provider live in the agent's home (a writable
+# location) and are sourced here, so nothing writes to read-only paths like
+# /opt or /usr/local.
+ENV_FILE="${HOME}/.config/codepods.env"
+if [ -f "$ENV_FILE" ]; then
   # shellcheck disable=SC1091
   set -a
-  . "$DEFAULTS_FILE"
+  . "$ENV_FILE"
   set +a
 fi
+
+# Prefer a user-local git proxy (installed by set_git_proxy) over system git.
+export PATH="${HOME}/.local/bin:${PATH}"
 
 PID_FILE="/tmp/start-agent.pid"
 TERMINAL_PORT="${TERMINAL_PORT:-${CODEPODS_TERMINAL_PORT:-7681}}"
@@ -17,6 +25,20 @@ if [ -z "$TERMINAL_PORT" ]; then
 fi
 
 FONT_OPTION="fontSize=${TERM_FONT_SIZE:-14}"
+
+# Push runtime configuration into the tmux environment so the CLI running
+# inside the session inherits it without writing any file.
+set_tmux_env() {
+  tmux start-server 2>/dev/null || true
+  local var val
+  for var in "$@"; do
+    val="${!var-}"
+    if [ -n "$val" ]; then
+      tmux setenv -g "$var" "$val" 2>/dev/null || true
+    fi
+  done
+}
+set_tmux_env TERMINAL_PORT TERM_FONT_SIZE TERM LANG COPILOT_PROVIDER_TYPE COPILOT_PROVIDER_API_KEY COPILOT_PROVIDER_BASE_URL COPILOT_PROVIDER_WIRE_API COPILOT_MODEL
 
 # Mark this invocation as the current owner
 echo "$$" > "$PID_FILE"
@@ -50,6 +72,7 @@ trap 'stop=true; cleanup' INT TERM
 start_services() {
   cleanup
   start_ttyd
+
   if [ "${#pids[@]}" -eq 0 ]; then
     echo "ERROR: no services started" >&2
     return 1

@@ -8,10 +8,10 @@ set_provider() {
   PROVIDER_NAME="$4"
   PROVIDER_TYPE="${5:-openai}"
 
-  mkdir -p /root/.codex
+  mkdir -p "${HOME}/.codex"
 
   python3 - "$BASE_URL" "$MODEL_NAME" "$API_KEY" "$PROVIDER_NAME" "$PROVIDER_TYPE" <<'PY'
-import sys
+import os, sys
 
 def esc(s: str) -> str:
     return s.replace('\\', '\\\\').replace('"', '\\"')
@@ -32,7 +32,7 @@ wire_api = "responses"
 if provider_type == "azure":
     toml += 'query_params.api-version = "2025-04-01-preview"\n'
 
-with open('/root/.codex/config.toml', 'w') as f:
+with open(f"{os.environ['HOME']}/.codex/config.toml", 'w') as f:
     f.write(toml)
 PY
 

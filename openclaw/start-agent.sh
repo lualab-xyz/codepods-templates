@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DEFAULTS_FILE="/opt/defaults.env"
-if [ -f "$DEFAULTS_FILE" ]; then
+# Runtime configuration is injected by the orchestrator through environment
+# variables (e.g. `docker exec --user agent -e TERMINAL_PORT=7681 ...`).
+# BYOK settings persisted by set_provider live in the agent's home (a writable
+# location) and are sourced here, so nothing writes to read-only paths like
+# /opt or /usr/local.
+ENV_FILE="${HOME}/.config/codepods.env"
+if [ -f "$ENV_FILE" ]; then
   # shellcheck disable=SC1091
   set -a
-  . "$DEFAULTS_FILE"
+  . "$ENV_FILE"
   set +a
 fi
+
+# Prefer a user-local git proxy (installed by set_git_proxy) over system git.
+export PATH="${HOME}/.local/bin:${PATH}"
 
 PID_FILE="/tmp/start-agent.pid"
 TERMINAL_PORT="${TERMINAL_PORT:-${CODEPODS_TERMINAL_PORT:-7681}}"
@@ -18,6 +26,20 @@ fi
 
 FONT_OPTION="fontSize=${TERM_FONT_SIZE:-14}"
 WEB_PORT="${WEB_PORT:-${CODEPODS_WEB_PORT:-18789}}"
+
+# Push runtime configuration into the tmux environment so the CLI running
+# inside the session inherits it without writing any file.
+set_tmux_env() {
+  tmux start-server 2>/dev/null || true
+  local var val
+  for var in "$@"; do
+    val="${!var-}"
+    if [ -n "$val" ]; then
+      tmux setenv -g "$var" "$val" 2>/dev/null || true
+    fi
+  done
+}
+set_tmux_env TERMINAL_PORT TERM_FONT_SIZE TERM LANG OPENAI_API_KEY OPENCLAW_GATEWAY_TOKEN WEB_PORT
 
 # Mark this invocation as the current owner
 echo "$$" > "$PID_FILE"
@@ -51,7 +73,7 @@ start_web() {
     return
   fi
   echo "Starting OpenClaw gateway web on port $WEB_PORT"
-  openclaw gateway run --port "$WEB_PORT" --auth token --token "${OPENCLAW_GATEWAY_TOKEN:-123456}" --allow-unconfigured > /tmp/openclaw-gateway.log 2>&1 &
+  openclaw gateway run --port "$WEB_PORT" --auth token --token "${OPENCLAW_GATEWAY_TOKEN:-******}" --allow-unconfigured > /tmp/openclaw-gateway.log 2>&1 &
   pids+=("$!")
 }
 

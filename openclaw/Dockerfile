@@ -22,7 +22,7 @@ RUN chmod +x /usr/local/bin/set-git-proxy.sh
 
 # Non-root user that runs the agent
 RUN useradd -m -s /bin/bash agent \
-    && mkdir -p /workspace \
+    && mkdir -p /workspace /home/agent/.local/bin /home/agent/.config \
     && chown -R agent:agent /workspace \
     && cp /root/.tmux.conf /home/agent/.tmux.conf \
     && chown agent:agent /home/agent/.tmux.conf
@@ -42,7 +42,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
 
 RUN mkdir -p /home/agent/.openclaw
 COPY files/root/.openclaw/openclaw.json /home/agent/.openclaw/openclaw.json
-COPY defaults.env /opt/defaults.env
 
 COPY entrypoint.sh /usr/local/bin/openclaw-entrypoint
 COPY set-provider.sh /usr/local/bin/set-provider.sh
@@ -51,7 +50,6 @@ COPY start-agent.sh /usr/local/bin/start-agent.sh
 COPY stop-agent.sh /usr/local/bin/stop-agent.sh
 RUN chmod +x /usr/local/bin/openclaw-entrypoint /usr/local/bin/set-provider.sh /usr/local/bin/add-mcp-server.sh /usr/local/bin/start-agent.sh /usr/local/bin/stop-agent.sh \
     && chown -R agent:agent /home/agent \
-    && chown -R agent:agent /opt
 
 USER agent
 

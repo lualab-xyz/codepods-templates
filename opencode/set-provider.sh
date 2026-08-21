@@ -8,10 +8,10 @@ set_provider() {
   PROVIDER_NAME="$4"
   PROVIDER_TYPE="${5:-openai}"
 
-  mkdir -p /root/.opencode /root/.local/share/opencode
+  mkdir -p "${HOME}/.opencode" "${HOME}/.local/share/opencode"
 
-  CONFIG_PATH='/root/.opencode/opencode.jsonc'
-  AUTH_PATH='/root/.local/share/opencode/auth.json'
+  CONFIG_PATH="${HOME}/.opencode/opencode.jsonc"
+  AUTH_PATH="${HOME}/.local/share/opencode/auth.json"
 
   node - "$BASE_URL" "$MODEL_NAME" "$API_KEY" "$PROVIDER_NAME" "$PROVIDER_TYPE" "$CONFIG_PATH" "$AUTH_PATH" <<'JS'
 const fs = require('fs');
