@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 RUN curl -fsSL "https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x86_64" \
     -o /usr/local/bin/ttyd && chmod +x /usr/local/bin/ttyd
 
-COPY files/root/.tmux.conf /root/.tmux.conf
+COPY files/root/.tmux.conf /opt/tmux/.tmux.conf
 COPY files/ttyd/index.html /opt/ttyd/index.html
 
 COPY set-git-proxy.sh /usr/local/bin/set-git-proxy.sh
@@ -23,9 +23,7 @@ RUN chmod +x /usr/local/bin/set-git-proxy.sh
 # Non-root user that runs the agent
 RUN useradd -m -s /bin/bash agent \
     && mkdir -p /workspace /home/agent/.local/bin /home/agent/.config \
-    && chown -R agent:agent /workspace \
-    && cp /root/.tmux.conf /home/agent/.tmux.conf \
-    && chown agent:agent /home/agent/.tmux.conf
+    && chown -R agent:agent /workspace
 
 ENV HOME=/home/agent
 
@@ -39,12 +37,13 @@ ENV PATH="/home/agent/.local/bin:${PATH}"
 RUN curl -LsSf https://code.kimi.com/install.sh | bash \
     && ln -sf /home/agent/.local/share/uv/python/cpython-3.13.14-linux-x86_64-gnu/bin/python3 /usr/local/bin/python3
 
+COPY seed-config.sh /usr/local/bin/seed-config.sh
 COPY entrypoint.sh /usr/local/bin/kimi-entrypoint
 COPY set-provider.sh /usr/local/bin/set-provider.sh
 COPY add-mcp-server.sh /usr/local/bin/add-mcp-server.sh
 COPY start-agent.sh /usr/local/bin/start-agent.sh
 COPY stop-agent.sh /usr/local/bin/stop-agent.sh
-RUN chmod +x /usr/local/bin/kimi-entrypoint /usr/local/bin/set-provider.sh /usr/local/bin/add-mcp-server.sh /usr/local/bin/start-agent.sh /usr/local/bin/stop-agent.sh \
+RUN chmod +x /usr/local/bin/seed-config.sh /usr/local/bin/kimi-entrypoint /usr/local/bin/set-provider.sh /usr/local/bin/add-mcp-server.sh /usr/local/bin/start-agent.sh /usr/local/bin/stop-agent.sh \
     && chown -R agent:agent /home/agent
 
 USER agent

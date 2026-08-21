@@ -4,7 +4,7 @@ A collection of **container templates** for running different **AI command-line 
 
 ## How it works
 
-Each template packages an AI CLI inside a Docker image based on `ubuntu:24.04`. The `entrypoint` itself only keeps the container alive; services are started independently through the orchestrator's `start_agent` command:
+Each template packages an AI CLI inside a Docker image based on `ubuntu:24.04`. The `entrypoint` runs a `seed-config.sh` on first start (creating the per-user base configs if they don't exist, never overwriting an existing one) and then only keeps the container alive; services are started independently through the orchestrator's `start_agent` command:
 
 1. `start_agent` launches **[ttyd](https://github.com/tsl0922/ttyd)** on the configured port (`7681` by default).
 2. ttyd attaches a persistent **[tmux](https://github.com/tmux/tmux)** session that runs the corresponding CLI in `/workspace`.
@@ -16,7 +16,7 @@ Each template packages an AI CLI inside a Docker image based on `ubuntu:24.04`. 
 
 Each template runs the agent as a **non-root** user (`agent`) for better isolation. The container's default user is `agent`; the CLI, ttyd and tmux all run as this user inside `/workspace` (which is owned by `agent`). The agent's home directory is `/home/agent`, where each CLI keeps its native configuration.
 
-The image is **read-only** for the agent user except for `$HOME`, `/workspace` and `/tmp` — nothing writes to `/opt` or `/usr/local` at runtime. Runtime configuration (ports, BYOK keys, …) is injected by the orchestrator via environment variables (`docker exec --user agent -e VAR=...`), and BYOK settings persisted by `set_provider` are stored under `$HOME/.config/codepods.env`. The git proxy is installed per-user into `$HOME/.local/bin` (prepended to `PATH` in `start-agent.sh`). When adding a new template, keep the `USER agent` directive as the last line of the `Dockerfile` so the runtime runs unprivileged.
+The image is **read-only** for the agent user except for `$HOME`, `/workspace` and `/tmp` — nothing writes to `/opt` or `/usr/local` at runtime. Nothing is baked into `$HOME` at build time (the host maps/mounts that directory), so per-user base configs (`~/.tmux.conf`, and the CLI's native config files) are seeded at container start by `seed-config.sh` from read-only templates under `/opt`. Runtime configuration (ports, BYOK keys, …) is injected by the orchestrator via environment variables (`docker exec --user agent -e VAR=...`), and BYOK settings persisted by `set_provider` are stored under `$HOME/.config/codepods.env`. The git proxy is installed per-user into `$HOME/.local/bin` (prepended to `PATH` in `start-agent.sh`). When adding a new template, keep the `USER agent` directive as the last line of the `Dockerfile` so the runtime runs unprivileged.
 
 ## Template structure
 
@@ -24,7 +24,8 @@ The image is **read-only** for the agent user except for `$HOME`, `/workspace` a
 <template>/
 ├── manifest.yml        # Metadata: name, description, icons, services and commands
 ├── Dockerfile          # Base image + CLI installation + ttyd
-├── entrypoint.sh       # Container keepalive (tail -f /dev/null)
+├── entrypoint.sh       # Runs seed-config.sh + container keepalive (tail -f /dev/null)
+├── seed-config.sh      # Seeds per-user base config on first start
 ├── start-agent.sh      # Starts ttyd/tmux (and the web UI if applicable)
 ├── stop-agent.sh       # Stops the previous start_agent instance
 ├── set-provider.sh     # Configures the CLI's BYOK provider (stores config in $HOME)
@@ -99,12 +100,13 @@ The web terminal is powered by [ttyd](https://github.com/tsl0922/ttyd) + [tmux](
 ## Adding a new template
 
 1. Create a new folder (e.g. `my-cli/`) replicating the structure above.
-2. Write a `Dockerfile` that installs the CLI and `ttyd`, and copies `entrypoint.sh`, `start-agent.sh`, `stop-agent.sh` and `set-provider.sh`. End the `Dockerfile` with `USER agent` so the agent runs as a non-root user (see [Security](#security)).
-3. `entrypoint.sh` must be a keepalive (`tail -f /dev/null`); the actual startup goes in `start-agent.sh`.
-4. Write `start-agent.sh` to launch `ttyd` + `tmux` with the CLI in `/workspace`. If the CLI has a web UI, add a `web` service as in `opencode/`, `kimi/` or `openclaw/`.
-5. Add `stop-agent.sh` so the session can be cleanly restarted.
-6. Define `manifest.yml` and the icons.
-7. Register the template in CodePods.
+2. Write a `Dockerfile` that installs the CLI and `ttyd`, and copies `entrypoint.sh`, `seed-config.sh`, `start-agent.sh`, `stop-agent.sh` and `set-provider.sh`. End the `Dockerfile` with `USER agent` so the agent runs as a non-root user (see [Security](#security)).
+3. `entrypoint.sh` must invoke `seed-config.sh` and then be a keepalive (`tail -f /dev/null`); the actual startup goes in `start-agent.sh`.
+4. Write `seed-config.sh` to seed the per-user base configs on first start. Keep any static templates under `/opt` (read-only, not covered by the `$HOME` mount) and copy them to `$HOME` only if they don't exist yet.
+5. Write `start-agent.sh` to launch `ttyd` + `tmux` with the CLI in `/workspace`. If the CLI has a web UI, add a `web` service as in `opencode/`, `kimi/` or `openclaw/`.
+6. Add `stop-agent.sh` so the session can be cleanly restarted.
+7. Define `manifest.yml` and the icons.
+8. Register the template in CodePods.
 
 ## License
 
