@@ -13,20 +13,34 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Slugify a name into a safe, lowercase, hyphenated folder name.
+slugify() {
+  local s
+  s="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-')"
+  s="$(printf '%s' "$s" | tr -s '-')"
+  s="${s%%-}"
+  s="${s%-}"
+  printf '%s' "$s"
+}
+
 add_skill() {
-  local source="$1"
-  local name
+  local name="$1"
+  local source="$2"
+  local slug
+  local zip
 
-  # Derive the skill folder name from the zip filename (e.g. skill1.zip -> skill1)
-  name="$(basename "$source")"
-  name="${name%.zip}"
+  slug="$(slugify "$name")"
+  if [ -z "$slug" ]; then
+    echo "ERROR: could not derive a valid folder name from '${name}'" >&2
+    return 1
+  fi
 
-  echo "Adding skill ${name} from ${source}"
+  echo "Adding skill ${name} (folder ${slug}) from ${source}"
 
   TMP_DIR="$(mktemp -d)"
 
   # Download when the source is a URL, otherwise use it as a local path
-  local zip="$source"
+  zip="$source"
   if [[ "$source" =~ ^https?:// ]]; then
     zip="${TMP_DIR}/$(basename "$source")"
     if ! curl -fsSL "$source" -o "$zip"; then
@@ -35,23 +49,23 @@ add_skill() {
     fi
   fi
 
-  mkdir -p "${SKILL_DIR}/${name}"
+  mkdir -p "${SKILL_DIR}/${slug}"
 
-  if ! unzip -o "$zip" -d "${SKILL_DIR}/${name}"; then
+  if ! unzip -o "$zip" -d "${SKILL_DIR}/${slug}"; then
     echo "ERROR: failed to extract ${zip}" >&2
     return 1
   fi
 
-  echo "OK: skill ${name} installed to ${SKILL_DIR}/${name}"
+  echo "OK: skill '${name}' installed to ${SKILL_DIR}/${slug}"
 }
 
-if [ "$#" -lt 1 ]; then
-  echo "ERROR: missing skill zip (URL or local path)" >&2
-  echo "Usage: $0 <url-or-path-to-zip>" >&2
+if [ "$#" -lt 2 ]; then
+  echo "ERROR: missing arguments" >&2
+  echo "Usage: $0 <name> <url-or-path-to-zip>" >&2
   exit 1
 fi
 
-if ! add_skill "$1"; then
+if ! add_skill "$1" "$2"; then
   echo "ERROR: failed to add skill" >&2
   exit 1
 fi
