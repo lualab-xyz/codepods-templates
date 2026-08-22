@@ -40,10 +40,21 @@ set_tmux_env() {
 }
 set_tmux_env TERMINAL_PORT TERM_FONT_SIZE TERM LANG COPILOT_PROVIDER_TYPE COPILOT_PROVIDER_API_KEY COPILOT_PROVIDER_BASE_URL COPILOT_PROVIDER_WIRE_API COPILOT_MODEL
 
+# If a provider/model was set while a session was already active, apply the
+# model once on this start (--model) so the running session picks it up, then
+# clear the pending flag. This way the user's own in-session model choices are
+# never silently overwritten on later restarts.
+MODEL_ARGS=()
+if [ "${COPILOT_MODEL_PENDING:-0}" = "1" ] && [ -n "${COPILOT_MODEL:-}" ]; then
+  MODEL_ARGS=(--model "$COPILOT_MODEL")
+  echo "Applying pending model '${COPILOT_MODEL}' to the session"
+  sed -i '/^COPILOT_MODEL_PENDING=/d' "$ENV_FILE"
+fi
+
 # Mark this invocation as the current owner
 echo "$$" > "$PID_FILE"
 
-TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec copilot --resume")
+TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec copilot --resume ${MODEL_ARGS[*]}")
 
 pids=()
 stop=false
