@@ -25,6 +25,9 @@ set_provider() {
   update_or_set "COPILOT_PROVIDER_BASE_URL" "$BASE_URL"
   update_or_set "COPILOT_PROVIDER_WIRE_API" "responses"
   update_or_set "COPILOT_MODEL" "$MODEL_NAME"
+  # Mark the model as pending so the next start_agent applies --model once to
+  # already-running sessions (see start-agent.sh), then clears the flag.
+  update_or_set "COPILOT_MODEL_PENDING" "1"
 
   echo "OK: Copilot BYOK provider set to ${PROVIDER_NAME}/${MODEL_NAME} via ${BASE_URL} (stored in ${DEFAULTS_FILE})"
 }
