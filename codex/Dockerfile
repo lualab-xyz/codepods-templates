@@ -7,7 +7,7 @@ ENV TERM=tmux-256color
 ENV LANG=en_US.UTF-8
 
 RUN apt-get update && apt-get install -y \
-    curl nodejs npm nano git sudo ca-certificates gnupg tmux \
+    curl nodejs npm nano git sudo ca-certificates gnupg tmux unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # ttyd — terminal web (static binary)
@@ -38,9 +38,14 @@ COPY seed-config.sh /usr/local/bin/seed-config.sh
 COPY entrypoint.sh /usr/local/bin/codex-entrypoint
 COPY set-provider.sh /usr/local/bin/set-provider.sh
 COPY add-mcp-server.sh /usr/local/bin/add-mcp-server.sh
+COPY remove-mcp-server.sh /usr/local/bin/remove-mcp-server.sh
+COPY add-skill.sh /usr/local/bin/add-skill.sh
+COPY remove-skill.sh /usr/local/bin/remove-skill.sh
+COPY get-mcps.sh /usr/local/bin/get-mcps.sh
+COPY get-skills.sh /usr/local/bin/get-skills.sh
 COPY start-agent.sh /usr/local/bin/start-agent.sh
 COPY stop-agent.sh /usr/local/bin/stop-agent.sh
-RUN chmod +x /usr/local/bin/seed-config.sh /usr/local/bin/codex-entrypoint /usr/local/bin/set-provider.sh /usr/local/bin/add-mcp-server.sh /usr/local/bin/start-agent.sh /usr/local/bin/stop-agent.sh \
+RUN chmod +x /usr/local/bin/seed-config.sh /usr/local/bin/codex-entrypoint /usr/local/bin/set-provider.sh /usr/local/bin/add-mcp-server.sh /usr/local/bin/remove-mcp-server.sh /usr/local/bin/add-skill.sh /usr/local/bin/remove-skill.sh /usr/local/bin/get-mcps.sh /usr/local/bin/get-skills.sh /usr/local/bin/start-agent.sh /usr/local/bin/stop-agent.sh \
     && chown -R agent:agent /home/agent
 
 USER agent
