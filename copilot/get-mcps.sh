@@ -2,7 +2,14 @@
 set -euo pipefail
 
 get_mcps() {
-  exec copilot mcp list
+  local json
+  json="$(copilot mcp list --json)" || return 1
+  printf '%s' "$json" | node -e '
+    let d = "";
+    process.stdin.on("data", c => d += c).on("end", () => {
+      const j = JSON.parse(d);
+      console.log(JSON.stringify(Object.keys(j.mcpServers || {})));
+    });'
 }
 
 if ! get_mcps; then

@@ -5,6 +5,7 @@ get_mcps() {
   local config="${HOME}/.opencode/opencode.jsonc"
 
   if [ ! -f "$config" ]; then
+    echo "[]"
     return 0
   fi
 
@@ -12,11 +13,7 @@ get_mcps() {
 const fs = require('fs');
 const [configPath] = process.argv.slice(2);
 const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-if (cfg.mcp) {
-  for (const name of Object.keys(cfg.mcp)) {
-    console.log(name);
-  }
-}
+console.log(JSON.stringify(Object.keys(cfg.mcp || {})));
 JS
 }
 
