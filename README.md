@@ -29,6 +29,10 @@ The image is **read-only** for the agent user except for `$HOME`, `/workspace` a
 ├── start-agent.sh      # Starts ttyd/tmux (and the web UI if applicable)
 ├── stop-agent.sh       # Stops the previous start_agent instance
 ├── set-provider.sh     # Configures the CLI's BYOK provider (stores config in $HOME)
+├── add-mcp-server.sh   # Adds an MCP server (copilot/codex/opencode)
+├── remove-mcp-server.sh# Removes an MCP server (copilot/codex/opencode)
+├── add-skill.sh        # Installs a skill from a zip (URL or path) (copilot/codex/opencode)
+├── remove-skill.sh     # Removes a skill by name (copilot/codex/opencode)
 ├── files/              # Native CLI configurations
 └── *-light.svg|png     # Light-mode icon
 └── *-dark.svg|png      # Dark-mode icon
@@ -105,8 +109,9 @@ The web terminal is powered by [ttyd](https://github.com/tsl0922/ttyd) + [tmux](
 4. Write `seed-config.sh` to seed the per-user base configs on first start. Keep any static templates under `/opt` (read-only, not covered by the `$HOME` mount) and copy them to `$HOME` only if they don't exist yet.
 5. Write `start-agent.sh` to launch `ttyd` + `tmux` with the CLI in `/workspace`. If the CLI has a web UI, add a `web` service as in `opencode/`, `kimi/` or `openclaw/`.
 6. Add `stop-agent.sh` so the session can be cleanly restarted.
-7. Define `manifest.yml` and the icons.
-8. Register the template in CodePods.
+7. If the CLI supports MCP servers and/or skills, add `add-mcp-server.sh` / `remove-mcp-server.sh` and `add-skill.sh` / `remove-skill.sh` (see the `copilot/`, `codex/` and `opencode/` templates for reference; `add-skill.sh` takes a zip URL or path and extracts it into the CLI's skill discovery folder).
+8. Define `manifest.yml` and the icons.
+9. Register the template in CodePods.
 
 ## License
 
