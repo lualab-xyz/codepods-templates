@@ -54,7 +54,7 @@ fi
 # Mark this invocation as the current owner
 echo "$$" > "$PID_FILE"
 
-TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec copilot --resume ${MODEL_ARGS[*]}")
+TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec copilot --continue ${MODEL_ARGS[*]}")
 
 pids=()
 stop=false
