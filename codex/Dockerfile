@@ -10,6 +10,11 @@ RUN apt-get update && apt-get install -y \
     curl nodejs npm nano git sudo ca-certificates gnupg tmux unzip \
     && rm -rf /var/lib/apt/lists/*
 
+# Node 22 LTS (common upgrade from apt Node 18)
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
 # ttyd — terminal web (static binary)
 RUN curl -fsSL "https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x86_64" \
     -o /usr/local/bin/ttyd && chmod +x /usr/local/bin/ttyd
