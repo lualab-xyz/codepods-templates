@@ -43,7 +43,7 @@ set_tmux_env TERMINAL_PORT TERM_FONT_SIZE TERM LANG OPENAI_API_KEY
 # Mark this invocation as the current owner
 echo "$$" > "$PID_FILE"
 
-TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec codex resume --all")
+TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec codex resume --all --sandbox danger-full-access")
 
 pids=()
 stop=false
