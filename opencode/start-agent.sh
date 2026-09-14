@@ -22,10 +22,8 @@ PID_FILE="/tmp/start-agent.pid"
 # Docker may mount /tmp with noexec, which breaks tools that extract and run
 # shared objects there (e.g. opencode's OpenTUI renderer). Point TMPDIR at a
 # writable+executable location under the agent's home instead.
-if [ -z "${TMPDIR:-}" ]; then
-  export TMPDIR="${HOME}/.tmp"
-  mkdir -p "$TMPDIR"
-fi
+export TMPDIR="${HOME}/.tmp"
+mkdir -p "$TMPDIR"
 
 TERMINAL_PORT="${TERMINAL_PORT:-${CODEPODS_TERMINAL_PORT:-7681}}"
 if [ -z "$TERMINAL_PORT" ]; then
