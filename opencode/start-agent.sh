@@ -51,7 +51,7 @@ set_tmux_env TERMINAL_PORT TERM_FONT_SIZE TERM LANG OPENAI_API_KEY WEB_PORT TMPD
 # Mark this invocation as the current owner
 echo "$$" > "$PID_FILE"
 
-TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec opencode --continue")
+TMUX_CMD=(tmux new-session -A -s main "cd /workspace && bash")
 
 pids=()
 stop=false
