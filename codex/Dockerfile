@@ -7,7 +7,7 @@ ENV TERM=tmux-256color
 ENV LANG=en_US.UTF-8
 
 RUN apt-get update && apt-get install -y \
-    curl nodejs npm nano git sudo ca-certificates gnupg tmux unzip \
+    curl nodejs npm nano sudo ca-certificates gnupg tmux unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Node 22 LTS (common upgrade from apt Node 18)
