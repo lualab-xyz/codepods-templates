@@ -20,6 +20,7 @@ base_url, model_name, api_key, provider_name, provider_type = sys.argv[1:6]
 
 toml = f'''model = "{esc(model_name)}"
 model_provider = "{esc(provider_name)}"
+web_search = "disabled"
 
 [model_providers."{esc(provider_name)}"]
 name = "{esc(provider_name)}"
