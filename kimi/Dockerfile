@@ -39,8 +39,12 @@ WORKDIR /workspace
 # ============================================================
 ENV PATH="/home/agent/.local/bin:${PATH}"
 
-RUN curl -LsSf https://code.kimi.com/install.sh | bash \
-    && ln -sf /home/agent/.local/share/uv/python/cpython-3.13.14-linux-x86_64-gnu/bin/python3 /usr/local/bin/python3
+# Kimi Code CLI — single binary, no Python/uv needed. The legacy
+# code.kimi.com/install.sh (Python "kimi-cli") is deprecated; its warning
+# points at this installer. `kimi --version` fails the build early if the
+# binary is not on PATH.
+RUN curl -fsSL https://code.kimi.com/kimi-code/install.sh | bash \
+    && kimi --version
 
 COPY seed-config.sh /usr/local/bin/seed-config.sh
 COPY entrypoint.sh /usr/local/bin/kimi-entrypoint

@@ -18,6 +18,14 @@ fi
 export PATH="${HOME}/.local/bin:${PATH}"
 
 PID_FILE="/tmp/start-agent.pid"
+
+# Same noexec-/tmp guard as the opencode template: Docker may mount /tmp
+# with noexec, breaking tools that extract and run shared objects there.
+# Forced unconditionally; an inherited TMPDIR pointing at /tmp would
+# otherwise keep a broken value in place.
+export TMPDIR="${HOME}/.tmp"
+mkdir -p "$TMPDIR"
+chmod 700 "$TMPDIR"
 TERMINAL_PORT="${TERMINAL_PORT:-${CODEPODS_TERMINAL_PORT:-7681}}"
 if [ -z "$TERMINAL_PORT" ]; then
   echo "ERROR: Terminal port not configured. Please set CODEPODS_TERMINAL_PORT." >&2
@@ -39,12 +47,12 @@ set_tmux_env() {
     fi
   done
 }
-set_tmux_env TERMINAL_PORT TERM_FONT_SIZE TERM LANG WEB_PORT
+set_tmux_env TERMINAL_PORT TERM_FONT_SIZE TERM LANG WEB_PORT TMPDIR
 
 # Mark this invocation as the current owner
 echo "$$" > "$PID_FILE"
 
-TMUX_CMD=(tmux new-session -A -s main "cd /workspace && exec kimi --continue")
+TMUX_CMD=(tmux new-session -A -s main "cd /workspace && export TMPDIR=${HOME}/.tmp && kimi --continue || exec kimi")
 
 pids=()
 stop=false
@@ -73,7 +81,11 @@ start_web() {
     return
   fi
   echo "Starting Kimi web on port $WEB_PORT"
-  kimi web --network --no-open --port "$WEB_PORT" > /tmp/kimi-web.log 2>&1 &
+  # --host (bare) binds 0.0.0.0 so the Codepods proxy can reach it; the
+  # legacy "--network" flag no longer exists in Kimi Code CLI. Auth is
+  # bypassed because the Codepods proxy is the authenticating layer (the
+  # alternative token lands only in the startup banner inside the log).
+  kimi web --host --no-open --port "$WEB_PORT" --dangerous-bypass-auth > /tmp/kimi-web.log 2>&1 &
   pids+=("$!")
 }
 
