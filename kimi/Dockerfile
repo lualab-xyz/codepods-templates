@@ -41,12 +41,13 @@ ENV PATH="/home/agent/.local/bin:${PATH}"
 
 # Kimi Code CLI — single binary, no Python/uv needed. The legacy
 # code.kimi.com/install.sh (Python "kimi-cli") is deprecated; its warning
-# points at this installer. The binary lands in ~/.kimi-code/bin/kimi; the
-# installer would otherwise only patch ~/.bashrc, which never applies to
-# the non-interactive shells tmux/ttyd use, so PATH is set explicitly and
-# PATH modification is skipped via KIMI_NO_MODIFY_PATH.
+# points at this installer. The global channel (code.kimi.ai) makes the
+# installer write region "global" instead of "mainland-cn". The binary lands
+# in ~/.kimi-code/bin/kimi; the installer would otherwise only patch ~/.bashrc,
+# which never applies to the non-interactive shells tmux/ttyd use, so PATH is
+# set explicitly and PATH modification is skipped via KIMI_NO_MODIFY_PATH.
 ENV PATH="/home/agent/.kimi-code/bin:${PATH}"
-RUN curl -fsSL https://code.kimi.com/kimi-code/install.sh | KIMI_NO_MODIFY_PATH=1 bash \
+RUN curl -fsSL https://code.kimi.ai/kimi-code/install.sh | KIMI_NO_MODIFY_PATH=1 bash \
     && kimi --version
 
 COPY seed-config.sh /usr/local/bin/seed-config.sh
