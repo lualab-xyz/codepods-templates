@@ -11,7 +11,7 @@
 - README actualizado (base image, estructura, nuevo template).
 - Validación: FROM ok ×7, COPY sources ok, manifests parsean.
 
-**Estado**: implementado en rama `feature/base-image`, pendiente de build/prueba en la máquina del usuario (aquí no hay docker). NO fusionar a main sin confirmación del usuario.
+**Estado**: implementado en rama `feature/base-image`. **Entrega parcial hecha a petición del usuario: solo la carpeta `ubuntu24/` está en `dev` y en `main` (commit `228f5d7`)** — las imágenes de agente siguen con sus Dockerfiles completos (sin FROM base, sin image_base) en dev/main hasta que el resto del refactor se apruebe. NO fusionar el resto a main sin confirmación del usuario.
 
 ## Pendiente (del usuario / bloqueados)
 - Build `docker build -t codepods-ubuntu24:latest ./ubuntu24` + builds de agentes y prueba de pods en su máquina.
