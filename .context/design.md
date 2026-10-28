@@ -6,7 +6,7 @@ Templates de agentes IA CLI para CodePods (claude, codex, copilot, gemini, kimi,
 ## Arquitectura (feature base-image)
 - **Imagen base común** `ubuntu24/`: `ubuntu:24.04` + Node 22 LTS (nodesource, sin git) + tmux + ttyd + `/opt/tmux/.tmux.conf` + `/opt/ttyd/index.html` genérico + `set-git-proxy.sh` + user `agent` (HOME `/home/agent`, PATH incluye `~/.local/bin`, WORKDIR `/workspace`). Sin agente, sin ENTRYPOINT, sin git, sin labels.
 - **Imágenes de agente**: `FROM codepods-ubuntu24:latest` + RUN del instalador del CLI + COPY de sus scripts + `COPY files/ttyd/index.html /opt/ttyd/index.html` (override del branding) + chmod + USER agent + ENTRYPOINT propio.
-- **`manifest.yml`**: añade bloque `image_base { name, repository, folder, dockerfile }` apuntando a `ubuntu24/Dockerfile`. La plataforma build-a la base primero y PUEDE reescribir la línea FROM al vuelo para usar otra imagen elegida en despliegue (p. ej. `codepods-ubuntu26:test`).
+- **`manifest.yml`**: añade bloque `image_base { name, repository, branch, folder, dockerfile }` apuntando a `ubuntu24/Dockerfile` (branch `main` por defecto). La plataforma build-a la base primero y PUEDE reescribir la línea FROM al vuelo para usar otra imagen elegida en despliegue (p. ej. `codepods-ubuntu26:test`).
 - **Labels de imagen** (`io.codepods.*`): los genera la plataforma en build; NO están en los Dockerfiles del repo.
 
 ## Runtime (invariantes críticos)

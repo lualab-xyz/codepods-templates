@@ -55,6 +55,7 @@ icon_dark: "copilot-dark.svg"
 image_base:                       # shared base image the Dockerfile starts from
   name: "codepods-ubuntu24:latest"
   repository: "https://github.com/lualab-xyz/codepods-templates.git"
+  branch: "main"
   folder: "ubuntu24"
   dockerfile: "Dockerfile"
 services:
@@ -79,7 +80,7 @@ RUN npm install -g <cli>
 ...                                # agent-specific scripts
 ```
 
-CodePods builds the base image first (`docker build -t codepods-ubuntu24:latest ./ubuntu24`), then the agent images. Each `manifest.yml` declares its base with `image_base` (`name`, `repository`, `folder`, `dockerfile`), so the base can be rebuilt from its repository, and the orchestrator may rewrite the `FROM` line of the agent Dockerfile (which must reference `image_base.name`) to another image chosen at deploy time (e.g. `codepods-ubuntu26:test`), without changing the template sources. To test the stack manually:
+CodePods builds the base image first (`docker build -t codepods-ubuntu24:latest ./ubuntu24`), then the agent images. Each `manifest.yml` declares its base with `image_base` (`name`, `repository`, `branch`, `folder`, `dockerfile`), so the base can be built from its repository (checked out at `branch`), and the orchestrator may rewrite the `FROM` line of the agent Dockerfile (which must reference `image_base.name`) to another image chosen at deploy time (e.g. `codepods-ubuntu26:test`), without changing the template sources. To test the stack manually:
 
 ```bash
 docker build -t codepods-ubuntu24:latest ./ubuntu24

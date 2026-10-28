@@ -20,5 +20,6 @@ commands:
 image_base:
   name: "codepods-ubuntu24:latest"
   repository: "https://github.com/lualab-xyz/codepods-templates.git"
+  branch: "main"
   folder: "ubuntu24"
   dockerfile: "Dockerfile"

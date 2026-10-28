@@ -5,7 +5,7 @@
 - Nuevo folder `ubuntu24/` con la imagen base común Dockerfile + assets (set-git-proxy.sh, .tmux.conf, index.html ttyd genérico). Node 22 LTS en base; sin git.
 - 7 Dockerfiles de agente reescritos: `FROM codepods-ubuntu24:latest` + solo parte agent-specific; cada uno copia su propio `files/ttyd/index.html` sobre `/opt/ttyd`.
 - 14 ficheros comunes eliminados de los 7 templates (set-git-proxy.sh, files/root/.tmux.conf).
-- `image_base { name/repository/folder/dockerfile }` añadido a los 7 manifest.yml.
+- `image_base { name/repository/branch/folder/dockerfile }` añadido a los 7 manifest.yml (`branch: "main"` por defecto, pedido a posteriori).
 - README: sección "Base image", estructura y pasos para plantilla nueva actualizados.
 - Creada documentación de contexto `.context/` (design, task, decisions, todo).
 
