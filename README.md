@@ -4,10 +4,10 @@ A collection of **container templates** for running different **AI command-line 
 
 ## How it works
 
-Each template packages an AI CLI inside a Docker image based on `ubuntu:24.04`. The `entrypoint` runs a `seed-config.sh` on first start (creating the per-user base configs if they don't exist, never overwriting an existing one) and then only keeps the container alive; services are started independently through the orchestrator's `start_agent` command:
+Each template packages an AI CLI inside a Docker image that starts from a shared base image (`codepods-ubuntu24`, built from [`ubuntu24/`](ubuntu24) — see [Base image](#base-image)). The `entrypoint` starts the container (ttyd on first start, per `seed-config.sh`) and then only keeps the container alive; services are started independently through the orchestrator's `start_agent` command:
 
 1. `start_agent` launches **[ttyd](https://github.com/tsl0922/ttyd)** on the configured port (`7681` by default).
-2. ttyd attaches a persistent **[tmux](https://github.com/tmux/tmux)** session that runs the corresponding CLI in `/workspace`.
+2. The ttyd session attaches a persistent **[tmux](https://github.com/tmux/tmux)** that runs the corresponding CLI in `/workspace`.
 3. For agents with a web UI, `start_agent` also starts that second service on its own port.
 4. `stop_agent` cleanly stops the previous instance so it can be restarted (`stop_agent` → `start_agent`).
 5. `set_provider` configures the BYOK provider in each CLI's native configuration.
@@ -22,8 +22,8 @@ The image is **read-only** for the agent user except for `$HOME`, `/workspace` a
 
 ```
 <template>/
-├── manifest.yml        # Metadata: name, description, icons, services and commands
-├── Dockerfile          # Base image + CLI installation + ttyd
+├── manifest.yml        # Metadata: name, description, icons, services, commands, image_base
+├── Dockerfile          # FROM shared base image + CLI install + agent-specific files
 ├── entrypoint.sh       # Runs seed-config.sh + container keepalive (tail -f /dev/null)
 ├── seed-config.sh      # Seeds per-user base config on first start
 ├── start-agent.sh      # Starts ttyd/tmux (and the web UI if applicable)
@@ -52,6 +52,11 @@ home_path: "/home/agent"          # home directory of the non-root user that run
 user: "agent"                     # non-root user that runs the agent
 icon: "copilot-light.svg"
 icon_dark: "copilot-dark.svg"
+image_base:                       # shared base image the Dockerfile starts from
+  name: "codepods-ubuntu24:latest"
+  repository: "https://github.com/lualab-xyz/codepods-templates.git"
+  folder: "ubuntu24"
+  dockerfile: "Dockerfile"
 services:
   - "terminal|Copilot CLI|7681"   # <name>|<type>|<port>
 commands:
@@ -59,6 +64,29 @@ commands:
   - start_agent: "/usr/local/bin/start-agent.sh"
   - stop_agent: "/usr/local/bin/stop-agent.sh"
 ```
+
+### Base image
+
+All templates share a common base image built from the `ubuntu24/` folder
+(`ubuntu:24.04` + common tooling: Node 22 LTS, tmux, ttyd, the git proxy script
+and the generic ttyd UI under `/opt`). Agent templates then only install the
+CLI and copy their own scripts:
+
+```dockerfile
+# <template>/Dockerfile
+FROM codepods-ubuntu24:latest      # FROM <image_base.name>
+RUN npm install -g <cli>
+...                                # agent-specific scripts
+```
+
+CodePods builds the base image first (`docker build -t codepods-ubuntu24:latest ./ubuntu24`), then the agent images. Each `manifest.yml` declares its base with `image_base` (`name`, `repository`, `folder`, `dockerfile`), so the base can be rebuilt from its repository, and the orchestrator may rewrite the `FROM` line of the agent Dockerfile (which must reference `image_base.name`) to another image chosen at deploy time (e.g. `codepods-ubuntu26:test`), without changing the template sources. To test the stack manually:
+
+```bash
+docker build -t codepods-ubuntu24:latest ./ubuntu24
+docker build -t codepods/copilot  ./copilot
+```
+
+The base image intentionally ships **no agent and no git**: agent CLIs and their scripts live in the agent images, and the git proxy is a self-contained per-runner script copied at build time but which only installs binaries into `$HOME/.local/bin` at runtime (`start-agent.sh` prepends it to `PATH`).
 
 ### Ports and variables
 
@@ -106,7 +134,7 @@ The web terminal is powered by [ttyd](https://github.com/tsl0922/ttyd) + [tmux](
 ## Adding a new template
 
 1. Create a new folder (e.g. `my-cli/`) replicating the structure above.
-2. Write a `Dockerfile` that installs the CLI and `ttyd`, and copies `entrypoint.sh`, `seed-config.sh`, `start-agent.sh`, `stop-agent.sh` and `set-provider.sh`. End the `Dockerfile` with `USER agent` so the agent runs as a non-root user (see [Security](#security)).
+2. Write a `Dockerfile` starting with `FROM codepods-ubuntu24:latest` that installs the CLI and copies `entrypoint.sh`, `seed-config.sh`, `start-agent.sh`, `stop-agent.sh` and `set-provider.sh` (see [Base image](#base-image)). End the `Dockerfile` with `USER agent` so the agent runs as a non-root user (see [Security](#security)). Add the `image_base` block to `manifest.yml` (copy it from any existing template).
 3. `entrypoint.sh` must invoke `seed-config.sh` and then be a keepalive (`tail -f /dev/null`); the actual startup goes in `start-agent.sh`.
 4. Write `seed-config.sh` to seed the per-user base configs on first start. Keep any static templates under `/opt` (read-only, not covered by the `$HOME` mount) and copy them to `$HOME` only if they don't exist yet.
 5. Write `start-agent.sh` to launch `ttyd` + `tmux` with the CLI in `/workspace`. If the CLI has a web UI, add a `web` service as in `opencode/`, `kimi/` or `openclaw/`.

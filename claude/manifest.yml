@@ -12,3 +12,11 @@ commands:
   - add_mcp_server: "/usr/local/bin/add-mcp-server.sh $name $url $transport $authHeader"
   - start_agent: "/usr/local/bin/start-agent.sh"
   - stop_agent: "/usr/local/bin/stop-agent.sh"
+# Shared base image used by this template's Dockerfile (FROM <name>).
+# The orchestrator builds this image first from repository/folder/dockerfile
+# and may rewrite the FROM line to another image chosen at deploy time.
+image_base:
+  name: "codepods-ubuntu24:latest"
+  repository: "https://github.com/lualab-xyz/codepods-templates.git"
+  folder: "ubuntu24"
+  dockerfile: "Dockerfile"
